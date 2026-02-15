@@ -1,0 +1,26 @@
+layer: curated
+table_name: credit_portfolio
+
+input_tables:
+  baseTable: /opt/data/refined/transactions
+  dependencies:
+    customer: /opt/data/refined/customer
+
+output_path: /opt/data/curated/credit_portfolio
+
+retain_columns:
+  - transaction_id
+  - customer_name
+
+validations:
+  - name: "check_null_transaction_id"
+    condition: "transaction_id IS NULL"
+    severity: "fail"
+
+  # - name: "check_negative_credit_score"
+  #   condition: "credit_score < 0"
+  #   severity: "warn"
+
+  - name: "check_null_customer_name"
+    condition: "customer_name IS NULL"
+    severity: "warn"

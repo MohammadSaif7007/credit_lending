@@ -1,0 +1,16 @@
+input_path: /opt/data/parsed/transactions
+output_path: /opt/data/refined/transactions
+
+steps:
+  - function: drop_nulls
+    args: ["amount"]
+  - function: filter_positive
+    args: ["fee"]
+
+validations:
+  # - name: "check_negative_amount"
+  #   condition: "amount > 0"
+  #   severity: "fail"
+  - name: "check_null_amount"
+    condition: "amount IS NULL"
+    severity: "fail"

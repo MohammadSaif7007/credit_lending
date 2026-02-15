@@ -1,0 +1,15 @@
+input_path: /opt/data/source/transactions.csv
+output_path: /opt/data/parsed/transactions
+
+steps:
+  - function: parse_float
+    args: ["amount"]
+  - function: add_ingestion_date
+
+validations:
+  - name: "check_null_transaction_id"
+    condition: "transaction_id IS NULL"
+    severity: "fail"
+  - name: "check_null_amount"
+    condition: "amount IS NULL"
+    severity: "warn"

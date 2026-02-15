@@ -1,0 +1,15 @@
+input_path: /opt/data/source/clients
+output_path: /opt/data/parsed/clients
+
+steps:
+  # - function: parse_float
+  #   args: ["amount"]
+  - function: add_ingestion_date
+
+validations:
+  - name: "check_null_client_id"
+    condition: "client_id IS NULL"
+    severity: "fail"
+  - name: "check_null_gender"
+    condition: "gender IS NULL"
+    severity: "warn"
