@@ -1,8 +1,26 @@
+# Python cache
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# Database files
 *.db
+
+# Logs
 *.log
-/data/
+
+# Python packaging
 *.egg-info/
+
+# Ignore all files in data folders but keep folder structure
+data/source/*
+data/parsed/*
+data/refined/*
+data/curated/*
+
+# Except .gitkeep (so folders are tracked)
+!data/source/.gitkeep
+!data/parsed/.gitkeep
+!data/refined/.gitkeep
+!data/curated/.gitkeep
