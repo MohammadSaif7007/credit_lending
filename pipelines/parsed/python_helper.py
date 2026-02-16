@@ -78,6 +78,41 @@ def round_column(df, columns, decimals=2):
     
     return df
 
+def mask_pii(df, columns, method="hash", visible_chars=1, mask_char="*"):
+    """
+    Mask PII columns in a DataFrame.
+    """
+
+    if isinstance(columns, str):
+        columns = [columns]
+
+    for column in columns:
+        if column not in df.columns:
+            raise ValueError(f"Column '{column}' not found in DataFrame")
+
+        if method == "hash":
+            df = df.withColumn(
+                f"{column}_masked",
+                F.sha2(F.col(column), 256)
+            )
+
+        elif method == "partial":
+            df = df.withColumn(
+                f"{column}_masked",
+                F.when(
+                    F.col(column).isNotNull(),
+                    F.concat(
+                        F.substring(F.col(column), 1, visible_chars),
+                        F.expr(f"repeat('{mask_char}', length({column}) - {visible_chars})")
+                    )
+                ).otherwise(None)
+            )
+
+        else:
+            raise ValueError("Invalid masking method. Choose 'hash' or 'partial'.")
+
+    return df
+
 def add_ingestion_date(df):
     """
     Add a current timestamp ingestion_date column.

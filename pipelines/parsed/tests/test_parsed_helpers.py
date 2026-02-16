@@ -5,7 +5,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from python_helper import (
     parse_float,
     add_ingestion_date,
-    parse_int
+    parse_int,
+    mask_pii
 )
 from framework.engine import run_validations
 
@@ -28,6 +29,23 @@ def test_add_ingestion_date(spark):
     df = spark.createDataFrame([(1,), (2,)], ["col"])
     df = add_ingestion_date(df)
     assert "ingestion_date" in df.columns
+
+# ----------------------------
+# PII Masking Tests
+# ----------------------------
+
+def test_mask_pii_hash(spark):
+    data = [("George Johnson", "Amsterdam"), ("Hannah Anderson", "Maastricht")]
+    df = spark.createDataFrame(data, ["name", "address"])
+    
+    df_masked = mask_pii(df, ["name", "address"], method="hash")
+    
+    # Check masked columns exist
+    assert "name_masked" in df_masked.columns
+    assert "address_masked" in df_masked.columns
+    
+    # Check that original and masked are different
+    assert df_masked.select("name", "name_masked").first()[0] != df_masked.select("name", "name_masked").first()[1]
 
 # ----------------------------
 # Data Quality Validation Test

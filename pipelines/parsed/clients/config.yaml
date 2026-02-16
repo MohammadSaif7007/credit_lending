@@ -11,6 +11,12 @@ steps:
   - function: parse_int
     args: ["income"]
   - function: add_ingestion_date
+  - function: mask_pii # PII Complaint or GDPR
+    args:
+      columns: ["name", "address"]
+      method: "hash"  # or "partial"
+      visible_chars: 1
+      mask_char: "*"
 
 validations:
   - name: "check_null_client_id"
