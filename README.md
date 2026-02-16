@@ -208,7 +208,7 @@ Scalable Airflow DAG orchestration for dependencies and validations
 Clean, unified datasets for analytics and ML models
 
 # Data Flow
-![alt text](image.png)
+![alt text](assets/image.png)
 
 # Orcestration Flow
-![alt text](image-1.png)
+![alt text](assets/image-1.png)
