@@ -1,0 +1,27 @@
+layer: refined
+
+table_name: collaterals
+
+input_path: /opt/data/parsed/collaterals
+output_path: /opt/data/refined/collaterals
+
+steps:
+  - function: remove_rows_with_null
+    args: ["collateral_id", "client_id"]
+
+  - function: remove_rows_with_unmapped_values
+    args:
+      type: ["mortgage_registration", "lombard_loans", "company_equipment", "cash_savings/deposits"]  
+
+validations:
+  - name: "check_null_collateral_id"
+    condition: "collateral_id IS NULL"
+    severity: "fail"
+
+  - name: "check_invalid_type"
+    condition: "type NOT IN ('mortgage_registration','lombard_loans','company_equipment','cash_savings/deposits')"
+    severity: "fail"
+
+  - name: "check_negative_value"
+    condition: "value <= 0"
+    severity: "fail"

@@ -1,0 +1,26 @@
+layer: refined
+
+table_name: market
+
+input_path: /opt/data/parsed/market
+output_path: /opt/data/refined/market
+
+steps:
+  - function: remove_rows_with_null
+    args: ["market_id", "symbol"]
+
+  - function: remove_rows_with_empty_values
+    args: ["symbol"]
+
+validations:
+  - name: "check_null_market_id"
+    condition: "market_id IS NULL"
+    severity: "fail"
+
+  - name: "check_negative_price"
+    condition: "price <= 0"
+    severity: "fail"
+
+  - name: "check_extreme_change"
+    condition: "change_pct < -20 OR change_pct > 20"
+    severity: "warn"

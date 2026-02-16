@@ -54,15 +54,22 @@ def write_output(df, output_dir: str):
 
     df = df.withColumn("year", F.year("ingestion_date")) \
            .withColumn("month", F.month("ingestion_date")) \
-           .withColumn("day", F.dayofmonth("ingestion_date")) \
-           .withColumn("hour", F.hour("ingestion_date"))
+           .withColumn("day", F.dayofmonth("ingestion_date")) 
 
-    df.write.mode("overwrite").partitionBy("year", "month", "day", "hour").parquet(output_dir)
+    df.write.mode("overwrite").partitionBy("year", "month", "day").parquet(output_dir)
     return df
 
 
 def run_validations(df, table_name: str, validations: list, stage="Pre-Write"):
     """Run SQL-based validations"""
+    # 1. Check if DataFrame exists
+    if df is None:
+        raise ValueError(f"[{stage} VALIDATION] DataFrame for {table_name} is None")
+
+    # 2. Check if DataFrame has rows without converting to RDD
+    if not df.head(1):  # returns [] if empty
+        raise ValueError(f"[{stage} VALIDATION] DataFrame for {table_name} is empty")
+    
     df.createOrReplaceTempView(table_name)
     for rule in validations:
         query = f"SELECT * FROM {table_name} WHERE {rule['condition']}"
@@ -80,7 +87,10 @@ def transform_df(layer: str, table: str, df, config):
             func = getattr(helper, step["function"])
             args = step.get("args", [])
             print(f"[INFO] Applying {step['function']} with args {args} on {layer}/{table}")
-            df = func(df, *args)
+            if isinstance(args, dict):
+                df = func(df, **args)   # for dict-based args
+            elif isinstance(args, list):
+                df = func(df, *args)    # for list-based args
     elif layer == "curated":
         spark = get_spark()
         transform_module = load_transform(table)

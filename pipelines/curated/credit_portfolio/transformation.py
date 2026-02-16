@@ -1,4 +1,4 @@
-from pyspark.sql.functions import col
+from pyspark.sql.functions import col, sum as Fsum, avg, max as Fmax, countDistinct, when
 from pipelines.curated.python_helper import CuratedHelper
 
 
@@ -15,22 +15,74 @@ class CreditPortfolioCurator(CuratedHelper):
     def cfg(self, key, default=None):
         return self.config.get(key, default)
     
-    def step_agg_transactions(self):
-        # Base table transformations
-        self.df.withColumn("credit_score_adj", col("amount") * 1.1)
-
-    def step_join_dependencies(self):
-        customer_df = self.dependencies.get("customer")
-
-        if customer_df is None:
-            raise ValueError("Customer dependency not provided")
-
+    # --------------------------
+    # Aggregations per client
+    # --------------------------
+    def step_aggregate_metrics(self):
         self.df = (
-            self.df
-            .join(customer_df, on="transaction_id", how="left")
+            self.df.groupBy("client_id")
+            .agg(
+                Fsum("amount").alias("total_loan_amount"),
+                Fsum("balance").alias("total_balance"),
+                avg("amount").alias("average_loan_amount"),
+                Fmax("amount").alias("max_loan_amount"),
+                countDistinct("status").alias("loan_status_count")
+            )
         )
 
+    # --------------------------
+    # Join with dependencies
+    # --------------------------
+    def step_join_dependencies(self):
+        client_df = self.dependencies.get("client")
+        collat_df = self.dependencies.get("collaterals")
+
+        if client_df is None:
+            raise ValueError("Client dependency not provided")
+        if collat_df is None:
+            raise ValueError("Collateral dependency not provided")
+
+        # Join client info
+        self.df = self.df.join(client_df, on="client_id", how="left")
+
+        # Join collateral info
+        collat_agg = (
+            collat_df.groupBy("client_id")
+            .agg(
+                Fsum("value").alias("total_collateral_value"),
+                countDistinct("type").alias("collateral_diversification_index")
+            )
+        )
+        self.df = self.df.join(collat_agg, on="client_id", how="left")
+
+    # --------------------------
+    # Derived metrics
+    # --------------------------
+    def step_derive_metrics(self):
+        self.df = self.df.withColumn(
+            "debt_to_income_ratio", col("total_loan_amount") / col("income")
+        )
+        self.df = self.df.withColumn(
+            "collateral_coverage_ratio", col("total_collateral_value") / col("total_balance")
+        )
+        self.df = self.df.withColumn(
+            "high_risk_flag",
+            when((col("debt_to_income_ratio") > 0.5) | (col("collateral_coverage_ratio") < 1), 1).otherwise(0)
+        )
+
+    # --------------------------
+    # Retain only needed columns
+    # --------------------------
+    def retain_columns(self):
+        cols_to_keep = self.cfg("retain_columns")
+        if cols_to_keep:
+            self.df = self.df.select(*cols_to_keep)
+
+    # --------------------------
+    # Execute all steps
+    # --------------------------
     def execute(self):
-        self.step_agg_transactions()
+        self.step_aggregate_metrics()
         self.step_join_dependencies()
-        self.retain_columns(self.cfg("retain_columns"))
+        self.step_derive_metrics()
+        self.retain_columns()

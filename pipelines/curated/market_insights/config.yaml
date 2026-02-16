@@ -1,0 +1,29 @@
+layer: curated
+table_name: market_insights
+
+input_tables:
+  baseTable: /opt/data/refined/market
+  dependencies: {}
+
+output_path: /opt/data/curated/market_insights
+
+retain_columns:
+  - symbol
+  - avg_price
+  - max_price
+  - min_price
+  - avg_change_pct
+  - volatility_index
+
+validations:
+  - name: "check_null_symbol"
+    condition: "symbol IS NULL"
+    severity: "fail"
+
+  - name: "check_negative_prices"
+    condition: "avg_price < 0 OR max_price < 0 OR min_price < 0"
+    severity: "warn"
+
+  - name: "check_volatility_index_range"
+    condition: "volatility_index < 0"
+    severity: "warn"

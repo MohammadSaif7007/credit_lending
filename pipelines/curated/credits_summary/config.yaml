@@ -1,0 +1,27 @@
+layer: curated
+table_name: credits_summary
+
+input_tables:
+  baseTable: /opt/data/refined/credits
+  dependencies: {}
+
+output_path: /opt/data/curated/credits_summary
+
+retain_columns:
+  - client_id
+  - total_amount
+  - average_payment
+  - default_flag
+
+validations:
+  - name: "check_null_client_id"
+    condition: "client_id IS NULL"
+    severity: "fail"
+
+  - name: "check_negative_total_amount"
+    condition: "total_amount < 0"
+    severity: "warn"
+
+  - name: "check_default_flag"
+    condition: "default_flag NOT IN (0,1)"
+    severity: "warn"

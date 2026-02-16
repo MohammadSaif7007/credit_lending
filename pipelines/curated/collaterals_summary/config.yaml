@@ -1,0 +1,27 @@
+layer: curated
+table_name: collaterals_summary
+
+input_tables:
+  baseTable: /opt/data/refined/collaterals
+  dependencies: {}
+
+output_path: /opt/data/curated/collaterals_summary
+
+retain_columns:
+  - client_id
+  - total_collateral_value
+  - num_collateral_types
+  - collateral_diversification_index
+
+validations:
+  - name: "check_null_client_id"
+    condition: "client_id IS NULL"
+    severity: "fail"
+
+  - name: "check_negative_total_collateral_value"
+    condition: "total_collateral_value < 0"
+    severity: "warn"
+
+  - name: "check_collateral_diversification_index_range"
+    condition: "collateral_diversification_index < 0"
+    severity: "warn"

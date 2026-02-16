@@ -1,0 +1,37 @@
+layer: parsed
+
+table_name: collaterals
+
+input_path: /opt/data/source/collaterals
+output_path: /opt/data/parsed/collaterals
+
+steps:
+  - function: parse_int
+    args: ["collateral_id", "client_id"]
+  - function: add_ingestion_date
+  - function: map_column_values
+    args: [
+      "type", {
+      "Mortgage Registration": "mortgage_registration",
+      "Lombard Loans": "lombard_loans", 
+      "Company Equipment": "company_equipment",
+      "Cash Savings/Deposits": "cash_savings/deposits"
+    }, "Unknown"
+    ]
+
+validations:
+  - name: "check_null_collateral_id"
+    condition: "collateral_id IS NULL"
+    severity: "fail"
+
+  - name: "check_null_client_id"
+    condition: "client_id IS NULL"
+    severity: "fail"
+
+  - name: "check_null_type"
+    condition: "type IS NULL"
+    severity: "warn"
+
+  - name: "check_negative_value"
+    condition: "value < 0"
+    severity: "fail"

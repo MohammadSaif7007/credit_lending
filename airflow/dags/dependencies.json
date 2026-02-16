@@ -1,0 +1,15 @@
+{
+  "parsed.clients": [],
+  "parsed.collaterals": [],
+  "parsed.credits": [],
+  "parsed.market": [],
+  "refined.clients": ["parsed.clients"],
+  "refined.collaterals": ["parsed.collaterals"],
+  "refined.credits": ["parsed.credits"],
+  "refined.market": ["parsed.market"],
+  "curated.credit_portfolio": ["refined.clients", "refined.credits", "refined.collaterals"],
+  "curated.client_summary": ["refined.clients"],
+  "curated.collaterals_summary": ["refined.collaterals"],
+  "curated.credits_summary": ["refined.credits"],
+  "curated.market_insights": ["refined.market"]
+}

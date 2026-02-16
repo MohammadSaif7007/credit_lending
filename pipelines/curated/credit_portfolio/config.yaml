@@ -2,25 +2,55 @@ layer: curated
 table_name: credit_portfolio
 
 input_tables:
-  baseTable: /opt/data/refined/transactions
+  baseTable: /opt/data/refined/credits
   dependencies:
-    customer: /opt/data/refined/customer
+    client: /opt/data/refined/clients
+    collaterals: /opt/data/refined/collaterals
 
 output_path: /opt/data/curated/credit_portfolio
 
 retain_columns:
-  - transaction_id
-  - customer_name
+  - client_id
+  - name
+  - total_loan_amount
+  - total_balance
+  - average_loan_amount
+  - max_loan_amount
+  - total_collateral_value
+  - collateral_diversification_index
+  - debt_to_income_ratio
+  - collateral_coverage_ratio
+  - high_risk_flag
 
 validations:
-  - name: "check_null_transaction_id"
-    condition: "transaction_id IS NULL"
+  - name: "check_null_client_id"
+    condition: "client_id IS NULL"
     severity: "fail"
 
-  # - name: "check_negative_credit_score"
-  #   condition: "credit_score < 0"
-  #   severity: "warn"
+  - name: "check_null_name"
+    condition: "name IS NULL"
+    severity: "warn"
 
-  - name: "check_null_customer_name"
-    condition: "customer_name IS NULL"
+  - name: "check_total_loan_non_negative"
+    condition: "total_loan_amount < 0"
+    severity: "fail"
+
+  - name: "check_total_balance_non_negative"
+    condition: "total_balance < 0"
+    severity: "fail"
+
+  - name: "check_debt_to_income_ratio"
+    condition: "debt_to_income_ratio > 1"
+    severity: "warn"
+
+  - name: "check_collateral_coverage_ratio"
+    condition: "collateral_coverage_ratio < 1"
+    severity: "warn"
+
+  - name: "check_high_risk_flag"
+    condition: "high_risk_flag NOT IN (0,1)"
+    severity: "fail"
+
+  - name: "check_non_null_aggregates"
+    condition: "total_collateral_value IS NULL OR collateral_diversification_index IS NULL"
     severity: "warn"

@@ -1,0 +1,39 @@
+layer: refined
+
+table_name: clients
+
+input_path: /opt/data/parsed/clients
+output_path: /opt/data/refined/clients
+
+steps:
+  - function: remove_rows_with_null
+    args: ["client_id", "name"]
+
+  - function: remove_rows_with_empty_values
+    args: ["name", "address"]
+
+  - function: remove_rows_with_unmapped_values
+    args: 
+      gender: [0,1]
+      corporate: ["Retail", "SME", "Corporate", "Other"]
+
+validations:
+  - name: "check_null_client_id"
+    condition: "client_id IS NULL"
+    severity: "fail"
+
+  - name: "check_empty_name"
+    condition: "name = ''"
+    severity: "fail"
+
+  - name: "check_invalid_gender"
+    condition: "gender NOT IN (0, 1)"
+    severity: "fail"
+
+  - name: "check_negative_income"
+    condition: "income < 0"
+    severity: "fail"
+
+  - name: "check_age_out_of_range"
+    condition: "age < 18 OR age > 100"
+    severity: "warn"

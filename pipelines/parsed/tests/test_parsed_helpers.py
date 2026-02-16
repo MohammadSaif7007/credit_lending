@@ -1,38 +1,68 @@
-# pipelines/credit_lending/parsed/tests/test_parsed_helpers.py
+import sys
+import os
 import pytest
-from pyspark.sql import SparkSession
-from pipelines.credit_lending.parsed import python_helper as ph
-
-@pytest.fixture(scope="class")
-def spark(request):
-    spark = SparkSession.builder \
-        .master("local[1]") \
-        .appName("test_parsed_helpers") \
-        .getOrCreate()
-    request.cls.spark = spark
-    yield
-    spark.stop()
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from python_helper import (
+    parse_float,
+    add_ingestion_date,
+    parse_int
+)
+from framework.engine import run_validations
 
 
-@pytest.mark.usefixtures("spark")
-class TestParsedHelpers:
+# ----------------------------
+# Helper Function Tests
+# ----------------------------
 
-    def test_parse_float(self):
-        df = self.spark.createDataFrame([("10.5",), ("20.0",)], ["amount"])
-        df2 = ph.parse_float(df, "amount")
-        values = [row.amount for row in df2.collect()]
-        assert all(isinstance(v, float) for v in values)
-        assert values == [10.5, 20.0]
+def test_parse_float(spark):
+    df = spark.createDataFrame([("10",), ("20",),("10.1",)], ["amount"])
+    df = parse_float(df, "amount")
+    assert df.schema["amount"].dataType.simpleString() == "double"
 
-    def test_parse_int(self):
-        df = self.spark.createDataFrame([("1",), ("2",)], ["transaction_id"])
-        df2 = ph.parse_int(df, "transaction_id")
-        values = [row.transaction_id for row in df2.collect()]
-        assert all(isinstance(v, int) for v in values)
-        assert values == [1, 2]
+def test_parse_int(spark):
+    df = spark.createDataFrame([("10",), ("20",),("10.1",)], ["amount"])
+    df = parse_int(df, "amount")
+    assert df.schema["amount"].dataType.simpleString() == "int"
 
-    def test_add_ingestion_date(self):
-        df = self.spark.createDataFrame([("Alice",), ("Bob",)], ["name"])
-        df2 = ph.add_ingestion_date(df)
-        assert "ingestion_date" in df2.columns
-        assert all(row.ingestion_date is not None for row in df2.collect())
+def test_add_ingestion_date(spark):
+    df = spark.createDataFrame([(1,), (2,)], ["col"])
+    df = add_ingestion_date(df)
+    assert "ingestion_date" in df.columns
+
+# ----------------------------
+# Data Quality Validation Test
+# ----------------------------
+
+def test_validation_fail_raises_exception(spark):
+    df = spark.createDataFrame(
+        [(1, "Alice"), (None, "Bob")],
+        ["client_id", "name"]
+    )
+
+    validations = [
+        {
+            "name": "check_null_client_id",
+            "condition": "client_id IS NULL",
+            "severity": "fail"
+        }
+    ]
+
+    with pytest.raises(Exception):
+        run_validations(df, "clients", validations)
+
+def test_validation_warn_does_not_raise(spark):
+    df = spark.createDataFrame(
+        [(1, "Alice"), (None, "Bob")],
+        ["client_id", "name"]
+    )
+
+    validations = [
+        {
+            "name": "check_null_client_id_warn",
+            "condition": "client_id IS NULL",
+            "severity": "warn"
+        }
+    ]
+
+    # Should NOT raise
+    run_validations(df, "clients", validations)

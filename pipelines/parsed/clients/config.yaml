@@ -1,15 +1,38 @@
+layer: parsed
+
+table_name: clients
+
 input_path: /opt/data/source/clients
 output_path: /opt/data/parsed/clients
 
 steps:
-  # - function: parse_float
-  #   args: ["amount"]
+  - function: parse_int
+    args: ["client_id", "age", "loan_count", "gender"]
+  - function: parse_int
+    args: ["income"]
   - function: add_ingestion_date
 
 validations:
   - name: "check_null_client_id"
     condition: "client_id IS NULL"
-    severity: "fail"
-  - name: "check_null_gender"
-    condition: "gender IS NULL"
-    severity: "warn"
+    severity: "fail"  # client_id must exist because it’s a PK
+
+  - name: "check_invalid_gender"
+    condition: "gender NOT IN (0, 1)"
+    severity: "warn"  # gender should be 0 or 1
+
+  - name: "check_null_name"
+    condition: "name IS NULL"
+    severity: "warn"  # name should exist but may be optional
+
+  - name: "check_age_range"
+    condition: "age < 18 OR age > 100"
+    severity: "warn"  # age should be within reasonable limits
+
+  - name: "check_negative_income"
+    condition: "income < 0"
+    severity: "fail"  # income cannot be negative
+
+  - name: "check_negative_loan_count"
+    condition: "loan_count < 0"
+    severity: "fail"  # loan_count cannot be negative

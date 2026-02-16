@@ -1,0 +1,36 @@
+layer: refined
+
+table_name: credits
+
+input_path: /opt/data/parsed/credits
+output_path: /opt/data/refined/credits
+
+steps:
+  - function: remove_rows_with_null
+    args: ["credit_id", "client_id"]
+
+  - function: remove_rows_with_unmapped_values
+    args:
+      status: [0, 1]
+
+
+validations:
+  - name: "check_null_credit_id"
+    condition: "credit_id IS NULL"
+    severity: "fail"
+
+  - name: "check_invalid_status"
+    condition: "status NOT IN (0, 1)"
+    severity: "fail"
+
+  - name: "check_negative_amount"
+    condition: "amount <= 0"
+    severity: "fail"
+
+  - name: "check_balance_negative"
+    condition: "balance < 0"
+    severity: "warn"
+
+  - name: "check_balance_exceeds_amount"
+    condition: "balance > amount"
+    severity: "warn"

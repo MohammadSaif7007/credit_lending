@@ -1,0 +1,36 @@
+layer: parsed
+
+table_name: credits
+
+input_path: /opt/data/source/credits
+output_path: /opt/data/parsed/credits
+
+steps:
+  - function: parse_int
+    args: ["credit_id", "client_id", "status"]
+  - function: parse_float
+    args: ["amount", "balance"]
+  - function: add_ingestion_date
+  - function: round_column
+    args: [["amount", "balance"], 2]
+
+validations:
+  - name: "check_null_credit_id"
+    condition: "credit_id IS NULL"
+    severity: "fail"
+
+  - name: "check_null_client_id"
+    condition: "client_id IS NULL"
+    severity: "fail"
+
+  - name: "check_negative_amount"
+    condition: "amount < 0"
+    severity: "fail"
+
+  - name: "check_negative_balance"
+    condition: "balance < 0"
+    severity: "fail"
+
+  - name: "check_status_values"
+    condition: "status NOT IN (0, 1)"
+    severity: "warn"

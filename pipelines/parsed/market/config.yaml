@@ -1,0 +1,32 @@
+layer: parsed
+
+table_name: market
+
+input_path: /opt/data/source/market
+output_path: /opt/data/parsed/market
+
+steps:
+  - function: parse_int
+    args: ["market_id"]
+  - function: add_ingestion_date
+  - function: parse_float
+    args: ["price", "change_pct"]
+  - function: round_column
+    args: [["price", "change_pct"], 2]
+
+validations:
+  - name: "check_null_market_id"
+    condition: "market_id IS NULL"
+    severity: "fail"
+
+  - name: "check_null_symbol"
+    condition: "symbol IS NULL"
+    severity: "warn"
+
+  - name: "check_negative_price"
+    condition: "price < 0"
+    severity: "fail"
+
+  - name: "check_change_pct_range"
+    condition: "change_pct < -100 OR change_pct > 100"
+    severity: "warn"

@@ -1,0 +1,33 @@
+layer: curated
+table_name: client_summary
+
+input_tables:
+  baseTable: /opt/data/refined/clients
+  dependencies: {}
+
+output_path: /opt/data/curated/client_summary
+
+retain_columns:
+  - client_id
+  - name
+  - total_loans
+  - average_loan_count
+  - debt_to_income_ratio
+  - high_risk_flag
+
+validations:
+  - name: "check_null_client_id"
+    condition: "client_id IS NULL"
+    severity: "fail"
+
+  - name: "check_null_name"
+    condition: "name IS NULL"
+    severity: "warn"
+
+  - name: "check_negative_total_loans"
+    condition: "total_loans < 0"
+    severity: "warn"
+
+  - name: "check_high_risk_flag"
+    condition: "high_risk_flag NOT IN (0,1)"
+    severity: "warn"
