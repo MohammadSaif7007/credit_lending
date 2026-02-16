@@ -15,6 +15,7 @@ __pycache__/
 
 # Images
 *.png
+*.PNG
 
 # Ignore all files in data folders but keep folder structure
 data/source/*
