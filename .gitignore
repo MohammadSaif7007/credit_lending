@@ -13,6 +13,9 @@ __pycache__/
 # Python packaging
 *.egg-info/
 
+# Images
+*.png
+
 # Ignore all files in data folders but keep folder structure
 data/source/*
 data/parsed/*
