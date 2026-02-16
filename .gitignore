@@ -27,6 +27,7 @@ data/curated/*
 
 # Images
 *.png
+*.PNG
 *.jpg
 *.jpeg
 *.gif
