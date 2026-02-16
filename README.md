@@ -1,10 +1,12 @@
 # Credit Lending ETL Project
 
-This project implements a **config-driven ETL pipeline** for ingesting, validating, transforming, and curating banking data, including clients, credits, collaterals, and market data. The pipeline supports multiple layers: **parsed → refined → curated** and is orchestrated using **Airflow**, with transformations implemented in **PySpark**.
+This project implements a **config-driven ETL pipeline** for ingesting, validating, transforming, and curating banking data, including clients, credits, collaterals, and market data. 
+The pipeline supports multiple layers: **parsed → refined → curated** and is orchestrated using **Airflow**, with transformations implemented in **PySpark**.
 
 ---
 
 ## **Project Structure**
+```
 credit_lending_platform/
 │
 ├── framework/                          # Generic reusable ETL framework
@@ -62,9 +64,10 @@ credit_lending_platform/
 ├── docker-compose.yml
 ├── requirements.txt
 └── README.md
-
+```
 
 **WorkFlow**
+```
                 +-------------------+
                 |     Airflow       |
                 |  (Orchestration)  |
@@ -85,7 +88,7 @@ credit_lending_platform/
                                    |
                                    v
                                 Loading
-
+```
 ---
 
 ## **Project Objective**
@@ -143,13 +146,13 @@ credit_lending_platform/
 git clone <repository_url>
 cd credit-lending-etl
 
-## Build the Docker image
+**Build the Docker image** 
 docker build -t credit_lending_etl:latest .
 
-## Run Docker container
+**Run Docker container** 
 docker-compose up -d
 
-## Start Airflow locally
+**Start Airflow locally** 
 # Initialize Airflow DB
 airflow db init
 
@@ -166,42 +169,35 @@ Open browser: http://localhost:8080 → Trigger credit_lending_dag.
 # Adding New Transformations
 ## **Parsed Layer**
 
-Add transformation function in pipelines/parsed/python_helper.py.
-
-Update the respective config.yaml to include the new step.
-
-Add validations if needed in config.yaml.
+- Add transformation function in pipelines/parsed/python_helper.py.
+- Update the respective config.yaml to include the new step.
+- Add validations if needed in config.yaml.
 
 ## **Refined Layer**
 
-Add function in pipelines/refined/python_helper.py.
-
-Update the config.yaml of the refined table with the new step.
+- Add function in pipelines/refined/python_helper.py.
+- Update the config.yaml of the refined table with the new step.
 
 ## **Curated Layer**
 
-Create a new transformation.py in the curated table folder.
-
-Update the table's config.yaml with input, output, retain_columns, and validations.
-
-Update dependencies.json if the curated table depends on other tables.
+- Create a new transformation.py in the curated table folder.
+- Update the table's config.yaml with input, output, retain_columns, and validations.
+- Update dependencies.json if the curated table depends on other tables.
 
 ## **Airflow DAG Updates**
 
-Add your new table to layers_tables in airflow/dags/credit_lending_dag.py.
-
-Define its dependencies in dependencies.json.
-
-DAG automatically creates TaskGroups and sets up upstream/downstream dependencies.
+- Add your new table to layers_tables in airflow/dags/credit_lending_dag.py.
+- Define its dependencies in dependencies.json.
+- DAG automatically creates TaskGroups and sets up upstream/downstream dependencies.
 
 ## **Unit Testing**
 
-Use pytest and Spark fixture defined in framework/conftest.py.
+- Use pytest and Spark fixture defined in framework/conftest.py.
 
 ## **Run all tests:**
-pytest pipelines/parsed/tests
-pytest pipelines/refined/tests
-pytest pipelines/curated/tests
+- pytest pipelines/parsed/tests
+- pytest pipelines/refined/tests
+- pytest pipelines/curated/tests
 
 # Summary
 
