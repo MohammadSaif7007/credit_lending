@@ -25,14 +25,11 @@ data/curated/*
 !data/refined/.gitkeep
 !data/curated/.gitkeep
 
-# Images
+# First: Ignore ALL images in the whole project
 *.png
-*.PNG
 *.jpg
 *.jpeg
-*.gif
 
-# EXCEPT images used for documentation/README
-!/docs/*.png
-!/assets/*.png
-!README_images/*.png
+# Second: Add an exception for your documentation folder
+!assets/
+!assets/*.png
